@@ -1,5 +1,8 @@
 import os
+import json
+import pprint
 from dotenv import load_dotenv
+from langchain.agents import create_agent
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 load_dotenv()
@@ -21,4 +24,23 @@ messages = [
     ("human", "I love you, you love me. We are happy family."),
 ]
 ai_msg = llm.invoke(messages)
-print(ai_msg)
+print("Translate:", ai_msg)
+print()
+
+def get_weather(city: str) -> str:
+    """Get weather for a given city."""
+    return f"It's always sunny in {city}!"
+
+agent = create_agent(
+    model=llm,
+    tools=[get_weather],
+    system_prompt="You are a helpful assistant",
+)
+
+# Run the agent
+weather = agent.invoke(
+    {"messages": [{"role": "user", "content": "what is the weather in sf"}]}
+)
+
+print("Weather report:")
+print(weather)
