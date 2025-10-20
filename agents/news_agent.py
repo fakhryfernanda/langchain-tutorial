@@ -1,9 +1,10 @@
 from gemini_model import llm
 
 from dotenv import load_dotenv
+from langchain.tools import tool
 from langchain.agents import create_agent
-from langgraph.checkpoint.memory import InMemorySaver
 from langchain.messages import HumanMessage
+from langgraph.checkpoint.memory import InMemorySaver
 
 system_prompt = """
     Kamu adalah AI Agent yang selalu up-to-date dengan berita terbaru dari berbagai sumber terpercaya (nasional maupun internasional).
@@ -20,6 +21,13 @@ system_prompt = """
     Tolong konfirmasi bahwa kamu siap menjadi partner diskusi berita, lalu tanyakan topik apa yang ingin aku bahas.
 """
 
+@tool
+def get_latest_news():
+    """Use this when user asks for latest news"""
+    
+    news = "Berita terbaru. Indonesia gagal lolos ke piala dunia setelah kalah dari Irak."
+    return news
+
 def create_news_agent():
     """Create and return a configured news agent."""
     
@@ -27,6 +35,7 @@ def create_news_agent():
 
     return create_agent(
         model=llm,
+        tools=[get_latest_news],
         system_prompt=system_prompt,
         checkpointer=InMemorySaver()
     )
