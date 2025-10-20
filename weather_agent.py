@@ -1,6 +1,5 @@
-import os
-from dotenv import load_dotenv
 from gemini_model import llm
+from dotenv import load_dotenv
 from dataclasses import dataclass
 
 from langchain.agents import create_agent
@@ -20,15 +19,15 @@ system_prompt = """
     If a user asks you for the weather, make sure you know the location. If you can tell from the question that they mean wherever they are, use the get_user_location tool to find their location.
 """
 
-@tool
-def get_weather_for_location(city: str) -> str:
-    """Get weather for a given city."""
-    return f"It's always sunny in {city}!"
-
 @dataclass
 class Context:
     """Custom runtime context schema."""
     user_id: str
+
+@tool
+def get_weather_for_location(city: str) -> str:
+    """Get weather for a given city."""
+    return f"It's always sunny in {city}!"
 
 @tool
 def get_user_location(runtime: ToolRuntime[Context, str]) -> str:
@@ -56,3 +55,29 @@ def create_weather_agent():
     )
     
     return agent
+
+def run_weather_agent():
+    print("=== Running Weather Agent Example ===")
+    # Create and use the weather agent
+    agent = create_weather_agent()
+
+    # `thread_id` is a unique identifier for a given conversation.
+    config = {"configurable": {"thread_id": "1"}}
+
+    response = agent.invoke(
+        {"messages": [{"role": "user", "content": "what is the weather outside?"}]},
+        config=config,
+        context=Context(user_id="1")
+    )
+
+    print()
+    print(response['structured_response'])
+
+    # Note that we can continue the conversation using the same `thread_id`.
+    response = agent.invoke(
+        {"messages": [{"role": "user", "content": "thank you!"}]},
+        config=config,
+        context=Context(user_id="1")
+    )
+
+    print(response['structured_response'])
