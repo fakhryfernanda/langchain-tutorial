@@ -43,13 +43,16 @@ def run_news_agent():
     agent = create_news_agent()
     config = {"configurable": {"thread_id": "1"}}
 
-    while True:
-        user_message = input("User message: ")
-        response = agent.invoke(
-            {"messages": HumanMessage(content=user_message)},
-            config
-        )
-        ai_message = get_last_ai_message(response['messages'])
+    try:
+        while True:
+            user_message = input("User message: ")
+            response = agent.invoke(
+                {"messages": HumanMessage(content=user_message)},
+                config
+            )
+            ai_message = get_last_ai_message(response['messages'])
 
-        print(get_text_content(ai_message))
-        print()
+            print(get_text_content(ai_message))
+            print()
+    except KeyboardInterrupt:
+        print("\n\nExiting...")
