@@ -1,5 +1,5 @@
 from gemini_model import llm
-from tools.article_reader import read_article, get_available_categories, get_dates_and_categories, list_articles
+from tools.article_reader import read_article, get_available_categories, get_dates_and_categories, list_articles, get_news_update
 from utils.utils import get_text_content, get_last_ai_message
 
 from dotenv import load_dotenv
@@ -21,7 +21,8 @@ system_prompt = """
     9. Saat pengguna meminta untuk membaca artikel, pertama gunakan tool list_articles untuk melihat artikel-artikel yang tersedia, lalu pilih artikel yang paling relevan berdasarkan permintaan pengguna. Tawarkan artikel tersebut sebagai pilihan utama, namun beri opsi kepada pengguna untuk melihat daftar lengkap artikel jika mereka ingin memilih sendiri.
     10. Setelah menentukan artikel yang akan dibaca (baik yang kamu pilih atau yang dipilih pengguna), gunakan tool read_article dengan menyertakan tanggal (YYYY-MM-DD) dan kategori yang sesuai.
     11. Setiap kali menyampaikan sebuah berita, sertakan juga waktu berita tersebut diterbitkan (tanggal dan jam, jika tersedia), nama sumber atau media asal berita tersebut.
-    12. Kamu harus menyampaikan berita seperti sesorang yang sedang menginfokan berita ke temannya.
+    12. Kamu harus menyampaikan berita sebagaimana isinya. Baru kemudian kamu boleh menambahkan analisis atau opini tambahan yang bersifat netral dan informatif.
+    13. Jika pengguna ingin mendapatkan update berita terbaru, gunakan tool get_news_update untuk mendapatkan judul berita terbaru dari kategori ekonomi, digital, hukum, lingkungan, internasional, dan olahraga. Tool ini akan mengembalikan daftar judul artikel yang tersedia untuk tanggal terbaru dari kategori-kategori tersebut. Gunakan read_article untuk membaca isi lengkap dari artikel yang dipilih pengguna.
 
     Tolong konfirmasi bahwa kamu siap menjadi partner diskusi berita, lalu tanyakan topik apa yang ingin aku bahas.
 """
@@ -33,7 +34,7 @@ def create_news_agent():
 
     return create_agent(
         model=llm,
-        tools=[read_article, get_available_categories, get_dates_and_categories, list_articles],
+        tools=[read_article, get_available_categories, get_dates_and_categories, list_articles, get_news_update],
         system_prompt=system_prompt,
         checkpointer=InMemorySaver()
     )

@@ -275,5 +275,88 @@ def read_article(date: str, category: str, max_retries=10):
     return f"No valid article found on {date} with category {category}."
 
 
+@tool
+def get_news_update():
+    """
+    Get the latest news updates from specific categories.
+    Returns the titles of all articles from ekonomi, digital, hukum, lingkungan, internasional, and olahraga categories for the most recent date available.
+    
+    Returns:
+        dict: A dictionary where keys are category names and values are lists of article information.
+              Each entry contains the title, date, and category of an article.
+    """
+    # List of allowed categories
+    allowed_categories = ["arsip", "digital", "ekonomi", "gaya-hidup", "hiburan", "hukum", "info-tempo", "lingkungan", "internasional", "olahraga", "politik", "sains", "sepakbola", "teroka"]
+    
+    # Specific categories to return
+    target_categories = ["ekonomi", "digital", "hukum", "lingkungan", "internasional", "olahraga"]
+    
+    vault = Path(os.getenv("OBSIDIAN_VAULT"))
+    if not vault.is_dir():
+        return {"error": f"Vault not found: {vault}"}
+
+    # Get the most recent date with available content
+    all_dates = _get_all_dates()
+    if not all_dates:
+        return {"error": "No dates found in vault"}
+    
+    latest_date = all_dates[0]  # Most recent date
+    
+    try:
+        year, month, day = latest_date.split("-")
+    except ValueError:
+        return {"error": f"Invalid date format in vault: {latest_date}"}
+
+    date_path = vault / year / month / day
+    if not date_path.is_dir():
+        return {"error": f"Date path does not exist: {date_path}"}
+
+    # Get all available categories for the latest date
+    available_categories = _get_categories_for_date_path(date_path, allowed_categories)
+    
+    # Filter to only the target categories
+    filtered_categories = [cat for cat in available_categories if cat in target_categories]
+    
+    if not filtered_categories:
+        return {"error": f"No target categories found for date: {latest_date}"}
+    
+    news_updates = {}
+    
+    # For each filtered category, get all articles and return only their titles
+    for category in filtered_categories:
+        category_path = date_path / category
+        if not category_path.is_dir():
+            continue
+            
+        # Get all markdown files in the category
+        md_files = [f for f in category_path.iterdir() if f.is_file() and f.suffix.lower() == ".md"]
+        
+        article_titles = []
+        for file_path in md_files:
+            try:
+                content = file_path.read_text()
+                
+                # Skip files with "content not available"
+                if "content not available" not in content.lower():
+                    # Extract title from filename (remove extension)
+                    title = file_path.stem
+                    
+                    # Return only the title, date, and category
+                    article_info = {
+                        "title": title,
+                        "date": latest_date,
+                        "category": category
+                    }
+                    article_titles.append(article_info)
+            except Exception:
+                # Skip files that can't be read
+                continue
+        
+        if article_titles:  # Only add to results if there are articles
+            news_updates[category] = article_titles
+    
+    return news_updates
+
+
 if __name__ == "__main__":
     print(read_article())
