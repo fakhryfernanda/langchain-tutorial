@@ -274,6 +274,27 @@ def read_article(date: str, category: str, max_retries=10):
 
     return f"No valid article found on {date} with category {category}."
 
+@tool
+def read_article_from_path(path: str) -> str:
+    """
+    Read the content of an article file by its path.
+    
+    Args:
+        path: The file path to the article
+    
+    Returns:
+        The content of the article as a string
+    """
+    load_dotenv()
+    
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        return content
+    except FileNotFoundError:
+        return f"File not found: {path}"
+    except Exception as e:
+        return f"Error reading file {path}: {str(e)}"
 
 @tool
 def get_news_update():
@@ -356,7 +377,3 @@ def get_news_update():
             news_updates[category] = article_titles
     
     return news_updates
-
-
-if __name__ == "__main__":
-    print(read_article())

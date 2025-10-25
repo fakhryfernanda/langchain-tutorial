@@ -1,5 +1,6 @@
 from gemini_model import llm
-from tools.article_reader import read_article, get_available_categories, get_dates_and_categories, list_articles, get_news_update
+from tools.article_reader import read_article, get_available_categories, get_dates_and_categories, list_articles, get_news_update, read_article_from_path
+from tools.fuzzy_find import fuzzy_search_articles
 from utils.utils import get_text_content, get_last_ai_message
 
 from dotenv import load_dotenv
@@ -22,7 +23,9 @@ system_prompt = """
     10. Setelah menentukan artikel yang akan dibaca (baik yang kamu pilih atau yang dipilih pengguna), gunakan tool read_article dengan menyertakan tanggal (YYYY-MM-DD) dan kategori yang sesuai.
     11. Setiap kali menyampaikan sebuah berita, sertakan juga waktu berita tersebut diterbitkan (tanggal dan jam, jika tersedia), nama sumber atau media asal berita tersebut.
     12. Kamu harus menyampaikan berita sebagaimana isinya. Baru kemudian kamu boleh menambahkan analisis atau opini tambahan yang bersifat netral dan informatif.
-    13. Jika pengguna ingin mendapatkan update berita terbaru, gunakan tool get_news_update untuk mendapatkan judul berita terbaru dari kategori ekonomi, digital, hukum, lingkungan, internasional, dan olahraga. Tool ini akan mengembalikan daftar judul artikel yang tersedia untuk tanggal terbaru dari kategori-kategori tersebut. Gunakan read_article untuk membaca isi lengkap dari artikel yang dipilih pengguna.
+    13. Jika pengguna ingin mendapatkan update berita terbaru, gunakan tool get_news_update untuk mendapatkan judul berita terbaru. Tawarkan maksimal 3 kategori saja. Untuk sisa kategori, cukup sebutkan nama kategorinya tanpa memberi list artikel dan tawarkan apakah pengguna mau tau berita terbaru dari kategori-kategori tersebut. Kemudian untuk setiap kategori yang punya list artikel, tawarkan maksimal 5 artikel terbaru kepada pengguna.
+    14. Jika pengguna mencari artikel dengan menyebutkan nama artikelnya atau topiknya, gunakan tool fuzzy_search_articles untuk mencari artikel yang cocok. Kemudian tawarkan semua artikel yang ditemukan kepada pengguna untuk dipilih.
+    15. Jika kamu tidak menemukan artikel yang diminta, katakan dengan jujur bahwa artikel tersebut tidak ditemukan dan tawarkan untuk mendiskusikan topik lain.
 
     Tolong konfirmasi bahwa kamu siap menjadi partner diskusi berita, lalu tanyakan topik apa yang ingin aku bahas.
 """
@@ -34,7 +37,7 @@ def create_news_agent():
 
     return create_agent(
         model=llm,
-        tools=[read_article, get_available_categories, get_dates_and_categories, list_articles, get_news_update],
+        tools=[read_article, get_available_categories, get_dates_and_categories, list_articles, get_news_update, fuzzy_search_articles, read_article_from_path],
         system_prompt=system_prompt,
         checkpointer=InMemorySaver()
     )
