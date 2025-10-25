@@ -10,7 +10,7 @@ from utils.fuzzy_find import fuzzy_search
 
 load_dotenv()
 
-def _get_latest_date(base: str = ".") -> str | None:
+def _get_latest_date(base: str = ".") -> Optional[str]:
     """Return the latest date in YYYY/MM/DD format."""
     base = Path(base)
     
@@ -33,7 +33,7 @@ def _get_latest_date(base: str = ".") -> str | None:
 
     return max(valid_dates)
 
-def _list_articles(date: str):
+def _list_articles(date: str) -> dict[str, list[str]]:
     path = Path(OBSIDIAN_VAULT) / date
     categories = [item.name for item in path.iterdir() if item.is_dir()]
 
@@ -44,12 +44,13 @@ def _list_articles(date: str):
     return articles
 
 @tool
-def fuzzy_search_articles(query: str, date: Optional[str]=None, category: Optional[str]=None, limit: int = 5, cutoff: float = 75) -> list[str]:
+def fuzzy_search_articles(query: Optional[str]=None, date: Optional[str]=None, category: Optional[str]=None, limit: int = 5, cutoff: float = 75) -> list[str]:
     """
-        Search for news articles by name using fuzzy matching.
+        Search for news articles using fuzzy matching. You can either filter by article name, date, or category.
+        If you choose one filter, you can set the other filters to None.
         
         Args:
-            query: The name or partial name of the article you're looking for
+            query: Optional name or partial name of the article you're looking for
             date: Optional date filter in format YYYY, YYYY/MM, or YYYY/MM/DD
             category: Optional category to filter or prioritize in the search
             limit: Maximum number of results to return (default: 5)
@@ -85,7 +86,7 @@ def read_article(path: str) -> str:
         return f"Error reading file {path}: {str(e)}"
 
 @tool
-def get_news_update():
+def get_news_update() -> dict[str, list[str]]:
     """
     Get the latest news updates from specific categories.
     Returns the titles of all articles from ekonomi, digital, hukum, lingkungan, internasional, and olahraga categories for the most recent date available.
