@@ -28,21 +28,10 @@ def _build_file_index(directory: str = ".") -> list[str]:
     return [str(p) for p in base.rglob("*.md")]
 
 def fuzzy_search(query: str, date: Optional[str]=None, category: Optional[str]=None, limit: Optional[int] = 5, cutoff: float = 75) -> list[str]:
-    """
-        Search for news articles by name using fuzzy matching.
-        
-        Args:
-            query: The name or partial name of the article you're looking for
-            date: Optional date filter in format YYYY, YYYY/MM, or YYYY/MM/DD
-            category: Optional category to filter or prioritize in the search
-            limit: Maximum number of results to return (default: 5)
-            cutoff: Minimum similarity score (0-100) for results (default: 75)
-        
-        Returns:
-            A list of file paths matching the query
-    """
 
     load_dotenv()
+    
+    path = OBSIDIAN_VAULT
         
     if date and _is_valid_date_format(date):
         path = os.path.join(OBSIDIAN_VAULT, date)
