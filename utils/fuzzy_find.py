@@ -5,16 +5,7 @@ from rapidfuzz import process, fuzz
 
 def _build_file_index(directory="."):
     base = Path(directory).resolve()
-    files = []
-    for p in base.rglob("*"):
-        if (
-            p.is_file()
-            and p.suffix == ".md"
-            and not any(part.startswith('.') for part in p.relative_to(base).parts)
-        ):
-            files.append(p.name)
-
-    return files
+    return [str(p) for p in base.rglob("*.md")]
 
 def fuzzy_find_files(query, limit=5, cutoff=0.7):
     load_dotenv()
