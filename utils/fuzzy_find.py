@@ -27,6 +27,17 @@ def _build_file_index(directory: str = ".") -> list[str]:
     base = Path(directory).resolve()
     return [str(p) for p in base.rglob("*.md")]
 
+def _build_file_index_for_category(directory: str = ".", category: Optional[str] = None) -> list[str]:
+    if not category:
+        return _build_file_index(directory)
+
+    base = Path(directory).resolve()
+    files = []
+    for d in base.rglob(category):
+        if d.is_dir():
+            files.extend(_build_file_index(str(d)))
+    return files
+
 def fuzzy_search(query: str, date: Optional[str]=None, category: Optional[str]=None, limit: Optional[int] = 5, cutoff: float = 75) -> list[str]:
 
     load_dotenv()
@@ -36,10 +47,7 @@ def fuzzy_search(query: str, date: Optional[str]=None, category: Optional[str]=N
     if date and _is_valid_date_format(date):
         path = os.path.join(OBSIDIAN_VAULT, date)
 
-    if category:
-        query = f"{category} {query}".strip()
-
-    index = _build_file_index(path)
+    index = _build_file_index_for_category(path, category)
 
     if query:    
         matches = process.extract(
@@ -57,9 +65,7 @@ def fuzzy_search(query: str, date: Optional[str]=None, category: Optional[str]=N
         else:
             return index
 
-    
-
 if __name__ == "__main__":
-    result = fuzzy_search(query="", date="2025/10", category="politik")
+    result = fuzzy_search(query="formula 1", date="", category="olahraga")
 
     print(result)
