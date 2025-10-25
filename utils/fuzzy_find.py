@@ -1,11 +1,11 @@
 import os
 import re
-from typing import Optional
 from pathlib import Path
+from typing import Optional
 from dotenv import load_dotenv
-from langchain.tools import tool
 from rapidfuzz import process, fuzz
 
+from globals import OBSIDIAN_VAULT
 
 def _is_valid_date_format(date_str: str) -> bool:
     """
@@ -27,8 +27,7 @@ def _build_file_index(directory: str = ".") -> list[str]:
     base = Path(directory).resolve()
     return [str(p) for p in base.rglob("*.md")]
 
-@tool
-def fuzzy_search_articles(query: str, date: Optional[str]=None, category: Optional[str]=None, limit: int = 5, cutoff: float = 75) -> list[str]:
+def fuzzy_search(query: str, date: Optional[str]=None, category: Optional[str]=None, limit: Optional[int] = 5, cutoff: float = 75) -> list[str]:
     """
         Search for news articles by name using fuzzy matching.
         
@@ -44,13 +43,9 @@ def fuzzy_search_articles(query: str, date: Optional[str]=None, category: Option
     """
 
     load_dotenv()
-    
-    path = os.getenv("OBSIDIAN_VAULT")
-    if not path:
-        raise ValueError("OBSIDIAN_VAULT environment variable is not set.")
-    
+        
     if date and _is_valid_date_format(date):
-        path = os.path.join(path, date)
+        path = os.path.join(OBSIDIAN_VAULT, date)
 
     if category:
         query = f"{category} {query}".strip()
@@ -68,11 +63,14 @@ def fuzzy_search_articles(query: str, date: Optional[str]=None, category: Option
 
         return [m[0] for m in matches]
     else:
-        return index[:limit]
+        if limit:
+            return index[:limit]
+        else:
+            return index
 
     
 
 if __name__ == "__main__":
-    result = fuzzy_search_articles(query="", date="2025/10", category="politik")
+    result = fuzzy_search(query="", date="2025/10", category="politik")
 
     print(result)
